@@ -1,15 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("./config/db");
 const memoryRoutes = require("./routes/memoryRoutes");
 const decisionRoutes = require("./routes/decisionRoutes");
 
 // Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
-connectDB();
 
 const app = express();
 
