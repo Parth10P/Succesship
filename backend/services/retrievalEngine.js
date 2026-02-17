@@ -6,19 +6,24 @@
  */
 const prisma = require("../config/db");
 const relevanceEngine = require("./relevanceEngine");
+const { updateLifecycleStates } = require("./lifecycleManager");
 
 /**
  * Get top memories for a supplier, scored and sorted by relevance.
  *
+ * - Runs lifecycle updates automatically before retrieval
  * - Excludes archived memories
  * - Scores each memory via relevanceEngine
  * - Returns top 5 sorted by finalScore (descending)
- * - Sets conflictFlag if both positive (>0.6) and negative (<0.2) signals exist
+ * - Sets conflictFlag if both positive and negative signals exist (score gap > 0.4)
  *
  * @param {string} supplierId - The supplier's ObjectId
  * @returns {Object} { memories: [...top5], conflictFlag: boolean }
  */
 const getMemoriesForSupplier = async (supplierId) => {
+  // Auto-run lifecycle state transitions
+  await updateLifecycleStates();
+
   // Fetch non-archived memories for this supplier
   const rawMemories = await prisma.memory.findMany({
     where: {
