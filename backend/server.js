@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const memoryRoutes = require("./routes/memoryRoutes");
+const supplierRoutes = require("./routes/supplierRoutes");
 const decisionRoutes = require("./routes/decisionRoutes");
 
 // Load environment variables
@@ -20,6 +21,7 @@ app.get("/health", (req, res) => {
 
 // Routes
 app.use("/api/memories", memoryRoutes);
+app.use("/api/suppliers", supplierRoutes);
 app.use("/api/decision", decisionRoutes);
 
 // Start server
