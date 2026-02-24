@@ -1,6 +1,10 @@
+```javascript
 import React, { useState } from 'react';
 import './App.css';
 import InvoiceForm from './components/InvoiceForm';
+import DecisionPanel from './components/DecisionPanel';
+import ExplanationPanel from './components/ExplanationPanel';
+import MemoryPanel from './components/MemoryPanel';
 
 function App() {
   const [decisionResult, setDecisionResult] = useState(null);
@@ -9,74 +13,62 @@ function App() {
     setDecisionResult(result);
   };
 
-  const getDecisionColor = (decision) => {
-    switch (decision) {
-      case 'APPROVE': return '#28a745';
-      case 'HOLD': return '#ffc107';
-      case 'REJECT': return '#dc3545';
-      default: return '#333';
-    }
+  const resetForm = () => {
+    setDecisionResult(null);
   };
 
   return (
-    <div className="App" style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+    <div className="App" style={{ fontFamily: 'Arial, sans-serif', padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <header className="App-header" style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1>Succeship - Invoice Decision Engine</h1>
         <p>Submit an invoice for AI-powered evaluation against historical supplier memories.</p>
       </header>
 
       <main style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
-        {/* Invoice Form Area */}
-        <section style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
-          <InvoiceForm onDecision={handleDecision} />
-        </section>
+        {!decisionResult ? (
+            <section style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
+              <InvoiceForm onDecision={handleDecision} />
+            </section>
+        ) : (
+            <section style={{ flex: '1', minWidth: '300px', width: '100%' }}>
+              <button 
+                onClick={resetForm}
+                style={{
+                  marginBottom: '20px',
+                  padding: '10px 15px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                ← Submit Another Invoice
+              </button>
 
-        {/* Results Area */}
-        <section style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
-          <h2>AI Decision Result</h2>
-
-          {!decisionResult ? (
-            <div style={{ padding: '20px', border: '1px dashed #ccc', borderRadius: '8px', color: '#666' }}>
-              Submit an invoice to see the AI's recommendation based on historical context.
-            </div>
-          ) : (
-            <div style={{
-              padding: '20px',
-              border: `2px solid ${getDecisionColor(decisionResult.decision)}`,
-              borderRadius: '8px',
-              backgroundColor: '#f8f9fa'
-            }}>
-              <h3 style={{
-                margin: '0 0 15px 0',
-                color: getDecisionColor(decisionResult.decision),
-                fontSize: '24px'
-              }}>
-                {decisionResult.decision}
-              </h3>
-
-              <div style={{ marginBottom: '15px' }}>
-                <strong>Explanation:</strong>
-                <p style={{ margin: '5px 0 0 0', lineHeight: '1.5' }}>
-                  {decisionResult.explanation}
-                </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <DecisionPanel 
+                    decision={decisionResult.decision} 
+                    conflictFlag={decisionResult.conflictFlag} 
+                  />
+                  <ExplanationPanel 
+                    explanation={decisionResult.explanation} 
+                  />
+                </div>
+                
+                <div>
+                  <MemoryPanel 
+                    memories={decisionResult.memoriesUsed} 
+                  />
+                </div>
               </div>
-
-              <div style={{ fontSize: '14px', color: '#555' }}>
-                <p style={{ margin: '5px 0' }}>
-                  <strong>Memories Used for Context:</strong> {decisionResult.memoriesUsed}
-                </p>
-                {decisionResult.conflictFlag && (
-                  <p style={{ margin: '5px 0', color: '#dc3545', fontWeight: 'bold' }}>
-                    ⚠️ Warning: Conflicting historical signals detected that require human review.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
+            </section>
+        )}
       </main>
     </div>
   );
 }
 
 export default App;
+```

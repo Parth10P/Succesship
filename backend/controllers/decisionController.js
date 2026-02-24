@@ -84,7 +84,7 @@ EXPLANATION: [your reasoning]`;
         return res.json({
             decision,
             explanation,
-            memoriesUsed: memories.length,
+            memoriesUsed: memories,
             conflictFlag,
         });
     } catch (error) {
