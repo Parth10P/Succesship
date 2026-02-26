@@ -209,7 +209,7 @@ node seed.js
 |---|---|---|
 | GET | `/health` | Check server is running |
 | POST | `/api/memories` | Add a new memory |
-| GET | `/api/memories/:supplierId` | Get all memories for a supplier |
+| GET | `/api/suppliers` | List all suppliers |
 | POST | `/api/decision` | Submit invoice and get a decision |
 
 ### POST `/api/decision` — Request Body
@@ -217,8 +217,8 @@ node seed.js
 ```json
 {
   "supplierId": "supplier_xyz_001",
-  "invoiceAmount": 250000,
-  "invoiceDate": "2024-12-01",
+  "amount": 250000,
+  "date": "2024-12-01",
   "description": "Monthly supply of raw materials"
 }
 ```
@@ -233,16 +233,11 @@ node seed.js
     {
       "type": "quality",
       "content": "Delivered 30% broken products — ₹50,000 in replacement costs.",
-      "relevanceScore": 0.85,
+      "finalScore": 0.85,
       "lifecycleState": "active"
-    },
-    {
-      "type": "payment",
-      "content": "Disputed invoice 8 months ago claiming non-receipt.",
-      "relevanceScore": 0.48,
-      "lifecycleState": "stale"
     }
-  ]
+  ],
+  "conflictFlag": true
 }
 ```
 
@@ -254,7 +249,7 @@ Commit this `.env.example` to the repo so teammates know what to configure:
 
 ```
 GROQ_API_KEY=
-MONGODB_URI=
+DATABASE_URL=
 PORT=5000
 ```
 
