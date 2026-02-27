@@ -77,8 +77,9 @@ const seedDB = async () => {
         supplierId: supplierXYZ.id,
         type: "quality",
         content:
-          "Latest 3 deliveries all passed inspection with zero defects. Significant improvement noted.",
+          "Latest 3 deliveries all passed inspection with zero defects. ISO 9001 certification renewed.",
         importanceScore: 0.8,
+        isEvergreen: true, // This memory will never decay
         createdAt: new Date(now - days(21)), // 3 weeks ago — recent good (conflicts with bad)
       },
     ];

@@ -11,7 +11,7 @@ const { calculateTimeDecay } = require("../utils/timeDecay");
  */
 const scoreMemories = (memories) => {
   const scored = memories.map((memory) => {
-    const decayWeight = calculateTimeDecay(memory.createdAt);
+    const decayWeight = memory.isEvergreen ? 1.0 : calculateTimeDecay(memory.createdAt);
     const relevanceScore =
       Math.round(memory.importanceScore * decayWeight * 100) / 100;
     return { ...memory, relevanceScore };

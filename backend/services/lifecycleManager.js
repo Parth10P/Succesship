@@ -20,6 +20,8 @@ const updateLifecycleStates = async (supplierId) => {
   const now = new Date();
 
   for (const memory of memories) {
+    if (memory.isEvergreen) continue; // Evergreen memories never decay
+
     const ageInDays = (now - new Date(memory.createdAt)) / (1000 * 60 * 60 * 24);
 
     let newState;

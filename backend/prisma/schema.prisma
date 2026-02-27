@@ -36,6 +36,7 @@ model Memory {
   content         String
   importanceScore Float    @default(0.5)
   lifecycleState  String   @default("active")
+  isEvergreen     Boolean  @default(false)
   createdAt       DateTime @default(now())
 
   @@index([supplierId])
