@@ -10,6 +10,7 @@ const prisma = require("./config/prismaClient");
 const memoryRoutes = require("./routes/memoryRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
 const decisionRoutes = require("./routes/decisionRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get("/health", (req, res) => {
 app.use("/api/memories", memoryRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/decision", decisionRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

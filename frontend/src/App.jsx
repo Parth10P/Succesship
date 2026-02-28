@@ -5,6 +5,7 @@ import InvoiceForm from "./components/InvoiceForm";
 import DecisionPanel from "./components/DecisionPanel";
 import ExplanationPanel from "./components/ExplanationPanel";
 import MemoryPanel from "./components/MemoryPanel";
+import InvoiceHistory from "./components/InvoiceHistory";
 
 function App() {
   const [result, setResult] = useState(null);
@@ -39,11 +40,15 @@ function App() {
             ↺ Reset &amp; Submit Another
           </button>
 
-          <DecisionPanel decision={result.decision} conflictFlag={result.conflictFlag} />
+          <DecisionPanel
+            decision={result.decision}
+            conflictFlag={result.conflictFlag}
+          />
           <ExplanationPanel explanation={result.explanation} />
           <MemoryPanel memories={result.memoriesUsed} />
         </>
       )}
+      <InvoiceHistory />
     </div>
   );
 }

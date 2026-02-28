@@ -21,6 +21,16 @@ const makeDecision = async (req, res) => {
       });
     }
 
+    // 0. Verify supplier exists
+    const supplier = await prisma.supplier.findUnique({
+      where: { id: supplierId },
+    });
+    if (!supplier) {
+      return res.status(404).json({
+        error: "Supplier not found. Please refresh the page and try again.",
+      });
+    }
+
     // 1. Update lifecycle states
     await updateLifecycleStates(supplierId);
 
@@ -38,7 +48,7 @@ const makeDecision = async (req, res) => {
     const typesSeen = new Set();
     const duplicateTypes = new Set();
 
-    topMemories.forEach(m => {
+    topMemories.forEach((m) => {
       if (typesSeen.has(m.type)) duplicateTypes.add(m.type);
       typesSeen.add(m.type);
     });
@@ -53,38 +63,42 @@ const makeDecision = async (req, res) => {
       memoriesBlock = topMemories
         .map(
           (m, i) =>
-            `${i + 1}. [${m.type}] (relevance: ${m.relevanceScore}, state: ${m.lifecycleState}): ${m.content}`
+            `${i + 1}. [${m.type}] (relevance: ${m.relevanceScore}, state: ${m.lifecycleState}): ${m.content}`,
         )
         .join("\n");
     }
 
-    const prompt = `You are a business decision AI for invoice processing.
-
-Invoice Details:
-- Supplier ID: ${supplierId}
-- Amount: ${invoiceAmount}
-- Date: ${invoiceDate}
-- Description: ${description}
-
-Relevant Historical Memories (scored by recency and importance):
-${memoriesBlock}
-
-${conflictFlag ? "\n⚠️ CONFLICT DETECTED: There are multiple historical memories of the same category that may contradict each other (e.g., old bad behavior vs recent good behavior). You MUST explicitly weigh the recent evidence against the old evidence in your explanation.\n" : ""}
-If there are no memories, base your decision only on the invoice details.
-
-Based on the invoice and the supplier's history, make a decision.
-
-Respond in this exact JSON format with no extra text:
-{
-  "decision": "APPROVE" | "HOLD" | "REJECT",
-  "explanation": "2 to 3 sentence explanation referencing specific memories that influenced the decision."
-}`;
+    const prompt = `You are a STRICT business decision AI. Your job is to PROTECT the company by rejecting high-risk invoices.
+ 
+ Invoice Details:
+ - Supplier ID: ${supplierId}
+ - Amount: ${invoiceAmount}
+ - Date: ${invoiceDate}
+ - Description: ${description}
+ 
+ Relevant Historical Memories (scored by recency and importance):
+ ${memoriesBlock}
+ 
+ DECISION CRITERIA:
+ 1. **REJECT**: Use this if there is a RECENT (last 30 days) critical failure, high defect rate (>20%), or if the current invoice description matches a known historical failure.
+ 2. **HOLD**: Use this ONLY if there is a conflict and the risk is moderate.
+ 3. **APPROVE**: Use this only if history is clean or evergreen performance has resolved old issues.
+ 
+ CRITICAL RULES:
+ - If a "CRITICAL FAILURE" or "45% contamination" is in the memories from the last 10 days, you MUST "REJECT".
+ - High amount (${invoiceAmount}) + History of damage/defects = MANDATORY REJECT.
+ 
+ Respond in this exact JSON format with no extra text:
+ {
+   "decision": "APPROVE" | "HOLD" | "REJECT",
+   "explanation": "One short direct sentence. No diplomatic fluff."
+ }`;
 
     // 5. Call Groq LLM
     const response = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
+      temperature: 0.1,
       max_tokens: 300,
     });
 
@@ -128,7 +142,7 @@ Respond in this exact JSON format with no extra text:
         isEvergreen: m.isEvergreen,
         createdAt: m.createdAt,
       })),
-      conflictFlag: conflictFlag
+      conflictFlag: conflictFlag,
     });
   } catch (error) {
     console.error("Error processing decision:", error);

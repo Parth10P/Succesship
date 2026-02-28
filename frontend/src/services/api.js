@@ -33,4 +33,10 @@ export const getSuppliers = async () => {
   return response.data;
 };
 
+// GET /api/invoices — get all past invoices
+export const getInvoices = async () => {
+  const response = await api.get("/api/invoices");
+  return response.data;
+};
+
 export default api;
