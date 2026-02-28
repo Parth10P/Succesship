@@ -30,6 +30,23 @@ const makeDecision = async (req, res) => {
     // 3. Score and rank top 5
     const topMemories = scoreMemories(rawMemories);
 
+    // 3.5. Detect Conflicts
+    let conflictFlag = false;
+
+    // Simple heuristic: If we have multiple memories of the same type but different polarity/age
+    // (e.g. good delivery recently vs bad delivery historically)
+    const typesSeen = new Set();
+    const duplicateTypes = new Set();
+
+    topMemories.forEach(m => {
+      if (typesSeen.has(m.type)) duplicateTypes.add(m.type);
+      typesSeen.add(m.type);
+    });
+
+    if (duplicateTypes.size > 0 && topMemories.length > 1) {
+      conflictFlag = true;
+    }
+
     // 4. Build prompt
     let memoriesBlock = "No historical memories found for this supplier.";
     if (topMemories.length > 0) {
@@ -52,6 +69,7 @@ Invoice Details:
 Relevant Historical Memories (scored by recency and importance):
 ${memoriesBlock}
 
+${conflictFlag ? "\n⚠️ CONFLICT DETECTED: There are multiple historical memories of the same category that may contradict each other (e.g., old bad behavior vs recent good behavior). You MUST explicitly weigh the recent evidence against the old evidence in your explanation.\n" : ""}
 If there are no memories, base your decision only on the invoice details.
 
 Based on the invoice and the supplier's history, make a decision.
@@ -107,8 +125,10 @@ Respond in this exact JSON format with no extra text:
         content: m.content,
         relevanceScore: m.relevanceScore,
         lifecycleState: m.lifecycleState,
+        isEvergreen: m.isEvergreen,
         createdAt: m.createdAt,
       })),
+      conflictFlag: conflictFlag
     });
   } catch (error) {
     console.error("Error processing decision:", error);

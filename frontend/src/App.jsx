@@ -39,7 +39,7 @@ function App() {
             ↺ Reset &amp; Submit Another
           </button>
 
-          <DecisionPanel decision={result.decision} />
+          <DecisionPanel decision={result.decision} conflictFlag={result.conflictFlag} />
           <ExplanationPanel explanation={result.explanation} />
           <MemoryPanel memories={result.memoriesUsed} />
         </>

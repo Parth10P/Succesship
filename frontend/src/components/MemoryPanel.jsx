@@ -92,6 +92,24 @@ const MemoryPanel = ({ memories }) => {
                   >
                     {memory.lifecycleState}
                   </span>
+                  {memory.isEvergreen && (
+                    <span
+                      style={{
+                        padding: "2px 6px",
+                        backgroundColor: "#e8f5e9",
+                        color: "#2e7d32",
+                        border: "1px solid #a5d6a7",
+                        borderRadius: "10px",
+                        fontSize: "10px",
+                        fontWeight: "bold",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      🌱 EVERGREEN
+                    </span>
+                  )}
                 </div>
                 <span style={{ fontSize: "12px", color: "#888" }}>
                   {timeAgo(memory.createdAt)}

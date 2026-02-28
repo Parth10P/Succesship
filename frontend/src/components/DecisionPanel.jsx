@@ -7,7 +7,7 @@ const DECISION_STYLES = {
   REJECT: { backgroundColor: "#c62828", color: "#fff" },
 };
 
-const DecisionPanel = ({ decision }) => {
+const DecisionPanel = ({ decision, conflictFlag }) => {
   const styles = DECISION_STYLES[decision] || {
     backgroundColor: "#666",
     color: "#fff",
@@ -43,6 +43,23 @@ const DecisionPanel = ({ decision }) => {
       >
         {decision}
       </div>
+      {conflictFlag && (
+        <div
+          style={{
+            marginTop: "12px",
+            backgroundColor: "#fff3cd",
+            color: "#856404",
+            padding: "8px 12px",
+            borderRadius: "4px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            border: "1px solid #ffeeba",
+            display: "inline-block"
+          }}
+        >
+          ⚠️ CONFLICTING HISTORY DETECTED
+        </div>
+      )}
     </div>
   );
 };
