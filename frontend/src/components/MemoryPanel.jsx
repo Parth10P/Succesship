@@ -67,7 +67,9 @@ const MemoryPanel = ({ memories }) => {
                   marginBottom: "8px",
                 }}
               >
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <div
+                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                >
                   <span
                     style={{
                       padding: "2px 8px",
@@ -105,7 +107,13 @@ const MemoryPanel = ({ memories }) => {
                   marginBottom: "6px",
                 }}
               >
-                <span style={{ fontSize: "12px", fontWeight: "bold", color: "#555" }}>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    color: "#555",
+                  }}
+                >
                   {score.toFixed(2)}
                 </span>
                 <div
@@ -127,7 +135,14 @@ const MemoryPanel = ({ memories }) => {
                 </div>
               </div>
 
-              <p style={{ margin: 0, color: "#333", lineHeight: "1.5", fontSize: "14px" }}>
+              <p
+                style={{
+                  margin: 0,
+                  color: "#333",
+                  lineHeight: "1.5",
+                  fontSize: "14px",
+                }}
+              >
                 {memory.content}
               </p>
             </div>

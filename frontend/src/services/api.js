@@ -1,8 +1,12 @@
 // frontend/src/services/api.js
 import axios from "axios";
 
+// Use Vite environment variable VITE_API_BASE_URL when available.
+// Falls back to http://localhost:3000 for local development.
+const baseURL = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:3000";
+
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL,
 });
 
 // POST /api/decision — submit invoice for AI decision
