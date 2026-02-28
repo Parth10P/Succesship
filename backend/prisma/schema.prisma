@@ -8,42 +8,35 @@ datasource db {
 }
 
 model Supplier {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  category     String    @default("general")
-  location     String    @default("")
-  contactEmail String    @default("")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  invoices     Invoice[]
-  memories     Memory[]
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  category  String?
+  location  String?
+  createdAt DateTime  @default(now())
+  invoices  Invoice[]
+  memories  Memory[]
 }
 
 model Invoice {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   supplierId  String   @db.ObjectId
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
   amount      Float
-  description String   @default("")
   date        DateTime
+  description String?
   status      String   @default("pending")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  supplier    Supplier @relation(fields: [supplierId], references: [id])
 }
 
 model Memory {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   supplierId      String   @db.ObjectId
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
   type            String
   content         String
   importanceScore Float    @default(0.5)
   lifecycleState  String   @default("active")
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  supplier        Supplier @relation(fields: [supplierId], references: [id])
 
   @@index([supplierId])
 }

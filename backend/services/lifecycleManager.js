@@ -1,50 +1,42 @@
-/**
- * Memory Lifecycle Manager
- *
- * Auto-transitions memory states based on age:
- *   - active → stale   (if age > 90 days)
- *   - stale → archived (if age > 365 days)
- */
-const prisma = require("../config/db");
-const { THRESHOLDS } = require("../utils/timeDecay");
+// backend/services/lifecycleManager.js
+const prisma = require("../config/prismaClient");
 
 /**
- * Update lifecycle states for all memories based on their age.
+ * Update lifecycle states for all memories of a supplier based on age.
  *
- * | Current State | Age         | New State |
- * |---------------|-------------|-----------|
- * | active        | > 90 days   | stale     |
- * | any           | > 365 days  | archived  |
+ * | Age           | State    |
+ * |---------------|----------|
+ * | < 90 days     | active   |
+ * | 90–365 days   | stale    |
+ * | > 365 days    | archived |
+ *
+ * @param {string} supplierId
  */
-const updateLifecycleStates = async () => {
+const updateLifecycleStates = async (supplierId) => {
+  const memories = await prisma.memory.findMany({
+    where: { supplierId },
+  });
+
   const now = new Date();
-  const staleThreshold = new Date(
-    now - THRESHOLDS.RECENT * 24 * 60 * 60 * 1000,
-  ); // 90 days
-  const archiveThreshold = new Date(now - THRESHOLDS.OLD * 24 * 60 * 60 * 1000); // 365 days
 
-  // Archive memories older than 365 days
-  const archived = await prisma.memory.updateMany({
-    where: {
-      createdAt: { lt: archiveThreshold },
-      lifecycleState: { not: "archived" },
-    },
-    data: { lifecycleState: "archived" },
-  });
+  for (const memory of memories) {
+    const ageInDays = (now - new Date(memory.createdAt)) / (1000 * 60 * 60 * 24);
 
-  // Mark memories older than 90 days as stale (if still active)
-  const staled = await prisma.memory.updateMany({
-    where: {
-      createdAt: { lt: staleThreshold },
-      lifecycleState: "active",
-    },
-    data: { lifecycleState: "stale" },
-  });
+    let newState;
+    if (ageInDays > 365) {
+      newState = "archived";
+    } else if (ageInDays >= 90) {
+      newState = "stale";
+    } else {
+      newState = "active";
+    }
 
-  if (archived.count > 0 || staled.count > 0) {
-    console.log(
-      `Lifecycle update: ${staled.count} → stale, ${archived.count} → archived`,
-    );
+    if (newState !== memory.lifecycleState) {
+      await prisma.memory.update({
+        where: { id: memory.id },
+        data: { lifecycleState: newState },
+      });
+    }
   }
 };
 

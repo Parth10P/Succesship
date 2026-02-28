@@ -1,159 +1,134 @@
-import React, { useState, useEffect } from 'react';
-import { getSuppliers, submitInvoice } from '../services/api';
+// frontend/src/components/InvoiceForm.jsx
+import React, { useState, useEffect } from "react";
+import { submitDecision, getSuppliers } from "../services/api";
 
-const InvoiceForm = ({ onDecision }) => {
+const InvoiceForm = ({ onResult, loading, setLoading }) => {
   const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
-    supplierId: '',
-    amount: '',
-    description: '',
-    date: ''
+    supplierId: "",
+    invoiceAmount: "",
+    invoiceDate: "",
+    description: "",
   });
 
-  // Fetch suppliers on component mount
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
         const data = await getSuppliers();
         setSuppliers(data);
       } catch (err) {
-        console.error('Failed to fetch suppliers:', err);
-        setError('Could not load suppliers. Is the backend running?');
+        console.error("Failed to load suppliers:", err);
+        setError("Could not load suppliers. Is the backend running?");
       }
     };
     fetchSuppliers();
   }, []);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const validateForm = () => {
-    if (!formData.supplierId || !formData.amount || !formData.description || !formData.date) {
-      setError('All fields are required.');
-      return false;
-    }
-    if (Number(formData.amount) <= 0) {
-      setError('Amount must be greater than 0.');
-      return false;
-    }
-    return true;
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    onDecision(null); // Clear previous results
 
-    if (!validateForm()) return;
+    if (
+      !formData.supplierId ||
+      !formData.invoiceAmount ||
+      !formData.invoiceDate ||
+      !formData.description
+    ) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (Number(formData.invoiceAmount) <= 0) {
+      setError("Amount must be greater than 0.");
+      return;
+    }
 
     setLoading(true);
     try {
       const payload = {
         ...formData,
-        amount: Number(formData.amount) // Ensure amount is processed as a number
+        invoiceAmount: Number(formData.invoiceAmount),
       };
-
-      const response = await submitInvoice(payload);
-      onDecision(response);
-
-      // Optional: Clear form on success
-      setFormData({
-        supplierId: '',
-        amount: '',
-        description: '',
-        date: ''
-      });
+      const result = await submitDecision(payload);
+      onResult(result);
     } catch (err) {
-      console.error('Failed to submit invoice:', err);
-      // Give a user-friendly error message
-      const errMsg = err.response?.data?.error || 'Failed to get an AI decision. Please check the backend connection and Groq configuration.';
-      setError(errMsg);
+      console.error("Decision error:", err);
+      const msg =
+        err.response?.data?.error ||
+        "Failed to get a decision. Check the backend and Groq configuration.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="invoice-form-container" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '400px', margin: '0 auto' }}>
-      <h2>Submit New Invoice</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-
-        <div>
-          <label htmlFor="supplierId" style={{ display: 'block', marginBottom: '5px' }}>Supplier</label>
+    <div className="card">
+      <h2 style={{ marginTop: 0 }}>Submit Invoice</h2>
+      <form onSubmit={handleSubmit} className="invoice-form">
+        <div className="form-group">
+          <label htmlFor="supplierId">Supplier</label>
           <select
             id="supplierId"
             name="supplierId"
             value={formData.supplierId}
             onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
           >
             <option value="">-- Select a Supplier --</option>
-            {suppliers.map(s => (
-              <option key={s.id} value={s.id}>{s.name} ({s.location})</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name} ({s.location || s.category || "N/A"})
+              </option>
             ))}
           </select>
         </div>
 
-        <div>
-          <label htmlFor="amount" style={{ display: 'block', marginBottom: '5px' }}>Amount (₹)</label>
+        <div className="form-group">
+          <label htmlFor="invoiceAmount">Amount (₹)</label>
           <input
             type="number"
-            id="amount"
-            name="amount"
-            value={formData.amount}
+            id="invoiceAmount"
+            name="invoiceAmount"
+            value={formData.invoiceAmount}
             onChange={handleChange}
             min="1"
-            style={{ width: '100%', padding: '8px' }}
+            placeholder="e.g. 250000"
           />
         </div>
 
-        <div>
-          <label htmlFor="description" style={{ display: 'block', marginBottom: '5px' }}>Description</label>
+        <div className="form-group">
+          <label htmlFor="invoiceDate">Invoice Date</label>
           <input
-            type="text"
+            type="date"
+            id="invoiceDate"
+            name="invoiceDate"
+            value={formData.invoiceDate}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="description">Description</label>
+          <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
-            placeholder="e.g. Raw materials batch #442"
-            style={{ width: '100%', padding: '8px' }}
+            rows={3}
+            placeholder="e.g. Monthly supply of raw materials batch #442"
           />
         </div>
 
-        <div>
-          <label htmlFor="date" style={{ display: 'block', marginBottom: '5px' }}>Invoice Date</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
+        {error && <div className="error-message">{error}</div>}
 
-        {error && <div style={{ color: 'red', fontSize: '14px' }}>{error}</div>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: '10px',
-            backgroundColor: loading ? '#999' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Processing through AI Engine...' : 'Submit Invoice'}
+        <button type="submit" className="submit-btn" disabled={loading}>
+          {loading ? "Analyzing..." : "Submit Invoice"}
         </button>
       </form>
     </div>

@@ -1,34 +1,25 @@
-/**
- * Relevance Scoring Engine
- *
- * Computes a final relevance score for each memory.
- *
- * Formula:
- *   finalScore = importanceScore × decayWeight × typeMultiplier
- *   typeMultiplier: quality/payment = 1.1, others = 1.0
- */
-const { getDecayWeight } = require("../utils/timeDecay");
-
-// Type-based multipliers — quality and payment memories get a boost
-const TYPE_MULTIPLIERS = {
-  quality: 1.1,
-  payment: 1.1,
-  logistics: 1.0,
-  seasonal: 1.0,
-  general: 1.0,
-};
+// backend/services/relevanceEngine.js
+const { calculateTimeDecay } = require("../utils/timeDecay");
 
 /**
- * Calculate the final relevance score for a memory.
+ * Score memories by relevance and return the top 5.
  *
- * @param {Object} memory - Memory object with importanceScore, createdAt, type
- * @returns {number} Final relevance score
+ * relevanceScore = importanceScore × timeDecayWeight
+ *
+ * @param {Array} memories - Array of Memory records from Prisma
+ * @returns {Array} Top 5 memories with `relevanceScore` attached, sorted desc
  */
-const score = (memory) => {
-  const decayWeight = getDecayWeight(memory.createdAt);
-  const typeMultiplier = TYPE_MULTIPLIERS[memory.type] || 1.0;
-  const finalScore = memory.importanceScore * decayWeight * typeMultiplier;
-  return Math.round(finalScore * 100) / 100;
+const scoreMemories = (memories) => {
+  const scored = memories.map((memory) => {
+    const decayWeight = calculateTimeDecay(memory.createdAt);
+    const relevanceScore =
+      Math.round(memory.importanceScore * decayWeight * 100) / 100;
+    return { ...memory, relevanceScore };
+  });
+
+  scored.sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+  return scored.slice(0, 5);
 };
 
-module.exports = { score, TYPE_MULTIPLIERS };
+module.exports = { scoreMemories };

@@ -1,8 +1,9 @@
+// backend/routes/decisionRoutes.js
 const express = require("express");
 const router = express.Router();
-const { processInvoice } = require("../controllers/decisionController");
+const { makeDecision } = require("../controllers/decisionController");
 
 // POST /api/decision — request an AI decision for an invoice
-router.post("/", processInvoice);
+router.post("/", makeDecision);
 
 module.exports = router;

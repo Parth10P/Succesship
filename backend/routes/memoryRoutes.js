@@ -1,14 +1,12 @@
+// backend/routes/memoryRoutes.js
 const express = require("express");
 const router = express.Router();
-const {
-    createMemory,
-    getMemoriesBySupplier,
-} = require("../controllers/memoryController");
+const { addMemory, getMemories } = require("../controllers/memoryController");
 
 // POST /api/memories — create a new memory
-router.post("/", createMemory);
+router.post("/", addMemory);
 
-// GET /api/memories/:supplierId — get all non-archived memories for a supplier
-router.get("/:supplierId", getMemoriesBySupplier);
+// GET /api/memories/:supplierId — get memories for a supplier
+router.get("/:supplierId", getMemories);
 
 module.exports = router;

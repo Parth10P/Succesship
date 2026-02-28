@@ -1,3 +1,4 @@
+// backend/seed.js
 const { PrismaClient } = require("@prisma/client");
 const dotenv = require("dotenv");
 
@@ -5,119 +6,129 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
+const days = (n) => n * 24 * 60 * 60 * 1000;
+
 const seedDB = async () => {
   try {
     console.log("Connected to MongoDB via Prisma...");
 
-    // Clear existing data
+    // Clear existing data (order matters for relations)
     await prisma.memory.deleteMany({});
     await prisma.invoice.deleteMany({});
     await prisma.supplier.deleteMany({});
     console.log("Cleared existing data.");
 
-    // --- Supplier 1: Supplier A (APPROVE Scenario) ---
-    const supplierA = await prisma.supplier.create({
+    // --- Create Suppliers ---
+    const supplierXYZ = await prisma.supplier.create({
       data: {
-        name: "Supplier A",
-        category: "general",
-        location: "New York, USA",
-        contactEmail: "contact@suppliera.com",
+        name: "Supplier XYZ",
+        category: "raw materials",
+        location: "Mumbai",
       },
     });
+    console.log("Created:", supplierXYZ.name, supplierXYZ.id);
 
-    // --- Supplier 2: Supplier B (HOLD Scenario) ---
-    const supplierB = await prisma.supplier.create({
+    const supplierABC = await prisma.supplier.create({
       data: {
-        name: "Supplier B",
+        name: "Supplier ABC",
         category: "logistics",
-        location: "London, UK",
-        contactEmail: "logistics@supplierb.co.uk",
+        location: "Delhi",
       },
     });
-
-    // --- Supplier 3: Supplier C (REJECT Scenario) ---
-    const supplierC = await prisma.supplier.create({
-      data: {
-        name: "Supplier C",
-        category: "materials",
-        location: "Shenzhen, CN",
-        contactEmail: "sales@supplierc.cn",
-      },
-    });
-
-    console.log("Seeded 3 suppliers.");
+    console.log("Created:", supplierABC.name, supplierABC.id);
 
     const now = Date.now();
-    const days = (n) => n * 24 * 60 * 60 * 1000;
 
-    // --- Memories for Supplier A (APPROVE: All recent, positive memories) ---
-    const supplierAMemories = [
+    // --- Memories for Supplier XYZ ---
+    const xyzMemories = [
       {
-        supplierId: supplierA.id,
+        supplierId: supplierXYZ.id,
         type: "quality",
-        content: "Outstanding quality in the last 3 deliveries. Zero defects.",
+        content:
+          "Batch #442 had 30% defect rate — ₹50,000 in replacement costs. Quality inspection failed.",
         importanceScore: 0.9,
-        lifecycleState: "active",
-        createdAt: new Date(now - days(10)), // 10 days ago
+        createdAt: new Date(now - days(120)), // 4 months ago — bad
       },
       {
-        supplierId: supplierA.id,
-        type: "logistics",
-        content: "Delivered 2 days ahead of schedule.",
-        importanceScore: 0.8,
-        lifecycleState: "active",
-        createdAt: new Date(now - days(30)), // 1 month ago
-      }
-    ];
-
-    // --- Memories for Supplier B (HOLD: Old bad, recent good -> conflict) ---
-    const supplierBMemories = [
-      {
-        supplierId: supplierB.id,
-        type: "logistics",
-        content: "Consistent on-time delivery for the last 2 months.",
-        importanceScore: 0.8,
-        lifecycleState: "active",
-        createdAt: new Date(now - days(15)), // 15 days ago (Recent Good)
-      },
-      {
-        supplierId: supplierB.id,
+        supplierId: supplierXYZ.id,
         type: "payment",
-        content: "Severe dispute over pricing terms resulting in delayed shipments.",
-        importanceScore: 0.9, // High importance
-        lifecycleState: "stale",
-        createdAt: new Date(now - days(200)), // ~7 months ago (Old Bad)
-      }
-    ];
-
-    // --- Memories for Supplier C (REJECT: Recent bad quality + payment dispute) ---
-    const supplierCMemories = [
+        content:
+          "Disputed invoice amount of ₹1,20,000. Took 3 weeks to resolve. Required escalation to management.",
+        importanceScore: 0.7,
+        createdAt: new Date(now - days(240)), // 8 months ago
+      },
       {
-        supplierId: supplierC.id,
+        supplierId: supplierXYZ.id,
+        type: "logistics",
+        content:
+          "Delivery delayed by 8 days due to warehouse flooding in transit hub.",
+        importanceScore: 0.6,
+        createdAt: new Date(now - days(60)), // 2 months ago
+      },
+      {
+        supplierId: supplierXYZ.id,
+        type: "seasonal",
+        content:
+          "Monsoon season causes consistent 5-7 day delays from this supplier every July-September.",
+        importanceScore: 0.4,
+        createdAt: new Date(now - days(395)), // 13 months ago — will be archived
+      },
+      {
+        supplierId: supplierXYZ.id,
         type: "quality",
-        content: "Batch #889 rejected due to 40% failure rate below spec thresholds.",
-        importanceScore: 0.95,
-        lifecycleState: "active",
-        createdAt: new Date(now - days(5)), // 5 days ago (Recent Bad Quality)
+        content:
+          "Latest 3 deliveries all passed inspection with zero defects. Significant improvement noted.",
+        importanceScore: 0.8,
+        createdAt: new Date(now - days(21)), // 3 weeks ago — recent good (conflicts with bad)
       },
-      {
-        supplierId: supplierC.id,
-        type: "payment",
-        content: "Refusing to accept net-30 terms and threatening to pause production.",
-        importanceScore: 0.85,
-        lifecycleState: "active",
-        createdAt: new Date(now - days(12)), // 12 days ago (Recent Payment Dispute)
-      }
     ];
 
-    // Insert all memories
-    const allMemories = [...supplierAMemories, ...supplierBMemories, ...supplierCMemories];
+    // --- Memories for Supplier ABC ---
+    const abcMemories = [
+      {
+        supplierId: supplierABC.id,
+        type: "payment",
+        content:
+          "Clean payment history. All invoices settled within net-15 terms. No disputes.",
+        importanceScore: 0.85,
+        createdAt: new Date(now - days(30)), // 1 month ago
+      },
+      {
+        supplierId: supplierABC.id,
+        type: "logistics",
+        content:
+          "Two shipments arrived damaged due to poor packaging. ₹15,000 loss.",
+        importanceScore: 0.5,
+        createdAt: new Date(now - days(180)), // 6 months ago
+      },
+      {
+        supplierId: supplierABC.id,
+        type: "quality",
+        content:
+          "Raw material quality dropped below acceptable threshold in batch #221.",
+        importanceScore: 0.6,
+        createdAt: new Date(now - days(330)), // 11 months ago
+      },
+      {
+        supplierId: supplierABC.id,
+        type: "seasonal",
+        content:
+          "Holiday season 2023 caused 2-week production shutdown. No deliveries in December.",
+        importanceScore: 0.3,
+        createdAt: new Date(now - days(730)), // 2 years ago — will be archived
+      },
+    ];
+
+    const allMemories = [...xyzMemories, ...abcMemories];
     for (const mem of allMemories) {
-      await prisma.memory.create({ data: mem });
+      const created = await prisma.memory.create({ data: mem });
+      console.log(
+        `  Memory [${created.type}] for supplier ${mem.supplierId === supplierXYZ.id ? "XYZ" : "ABC"}: "${created.content.substring(0, 50)}..."`
+      );
     }
 
-    console.log(`Seeded ${allMemories.length} memories.`);
-    console.log("\nSeeding complete!");
+    console.log(`\nSeeded 2 suppliers and ${allMemories.length} memories.`);
+    console.log("Seeding complete!");
   } catch (error) {
     console.error("Seeding error:", error.message);
   } finally {

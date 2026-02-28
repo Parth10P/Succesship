@@ -1,16 +1,26 @@
-import React from 'react';
+// frontend/src/components/ExplanationPanel.jsx
+import React from "react";
 
 const ExplanationPanel = ({ explanation }) => {
   return (
-    <div style={{
-      marginBottom: '20px',
-      padding: '20px',
-      backgroundColor: '#f8f9fa',
-      border: '1px solid #e9ecef',
-      borderRadius: '8px'
-    }}>
-      <h3 style={{ marginTop: 0, marginBottom: '10px', color: '#495057' }}>AI Explanation</h3>
-      <p style={{ margin: 0, lineHeight: '1.6', color: '#212529', fontSize: '16px' }}>
+    <div
+      className="card"
+      style={{
+        borderLeft: "4px solid #1565c0",
+        marginBottom: "16px",
+      }}
+    >
+      <h3 style={{ marginTop: 0, color: "#555", fontSize: "14px" }}>
+        Why this decision was made
+      </h3>
+      <p
+        style={{
+          margin: 0,
+          lineHeight: "1.7",
+          color: "#333",
+          fontSize: "15px",
+        }}
+      >
         {explanation}
       </p>
     </div>

@@ -1,51 +1,48 @@
-import React from 'react';
+// frontend/src/components/DecisionPanel.jsx
+import React from "react";
 
-const DecisionPanel = ({ decision, conflictFlag }) => {
-  const getDecisionStyles = () => {
-    switch (decision) {
-      case 'APPROVE':
-        return { backgroundColor: '#d4edda', color: '#155724', border: '1px solid #c3e6cb' };
-      case 'HOLD':
-        return { backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffeeba' };
-      case 'REJECT':
-        return { backgroundColor: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb' };
-      default:
-        return { backgroundColor: '#e2e3e5', color: '#383d41', border: '1px solid #d6d8db' };
-    }
+const DECISION_STYLES = {
+  APPROVE: { backgroundColor: "#2e7d32", color: "#fff" },
+  HOLD: { backgroundColor: "#f57f17", color: "#fff" },
+  REJECT: { backgroundColor: "#c62828", color: "#fff" },
+};
+
+const DecisionPanel = ({ decision }) => {
+  const styles = DECISION_STYLES[decision] || {
+    backgroundColor: "#666",
+    color: "#fff",
   };
 
-  const styles = getDecisionStyles();
-
   return (
-    <div style={{ marginBottom: '20px' }}>
+    <div
+      style={{
+        ...styles,
+        padding: "28px 20px",
+        borderRadius: "8px",
+        textAlign: "center",
+        marginBottom: "16px",
+      }}
+    >
       <div
         style={{
-          ...styles,
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          fontSize: "12px",
+          textTransform: "uppercase",
+          letterSpacing: "2px",
+          opacity: 0.8,
+          marginBottom: "8px",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '32px', letterSpacing: '1px' }}>{decision}</h2>
+        Decision
       </div>
-
-      {conflictFlag && (
-        <div style={{
-          marginTop: '10px',
-          padding: '12px',
-          backgroundColor: '#ff9800',
-          color: 'white',
-          borderRadius: '6px',
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <span style={{ fontSize: '20px' }}>⚠️</span>
-          <span>Warning: Conflicting historical signals detected that require human review.</span>
-        </div>
-      )}
+      <div
+        style={{
+          fontSize: "36px",
+          fontWeight: "bold",
+          letterSpacing: "2px",
+        }}
+      >
+        {decision}
+      </div>
     </div>
   );
 };
