@@ -148,8 +148,8 @@ const InvoiceHistory = () => {
                     {invoice.supplier?.name || "Unknown"}
                   </td>
                   <td style={{ padding: "12px 8px" }}>
-                    $
-                    {invoice.amount.toLocaleString(undefined, {
+                    ₹
+                    {invoice.amount.toLocaleString("en-IN", {
                       minimumFractionDigits: 2,
                     })}
                   </td>
